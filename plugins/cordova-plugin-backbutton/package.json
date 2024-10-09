@@ -18,5 +18,8 @@
     "ecosystem:cordova",
     "cordova-android"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "cordova-plugin-backbutton": "file:"
+  }
 }

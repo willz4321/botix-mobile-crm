@@ -2,7 +2,7 @@
   "cordova-plugin-backbutton": {
     "source": {
       "type": "registry",
-      "id": "cordova-plugin-backbutton"
+      "id": "cordova-plugin-backbutton@^0.3.0"
     },
     "is_top_level": true,
     "variables": {}
