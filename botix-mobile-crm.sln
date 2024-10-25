@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "node_modules", "node_modules", "{BDAE6EE7-2F27-40F7-A83D-E6BEDD0FA88A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cordova-plugin-local-notification", "cordova-plugin-local-notification", "{43D951DE-2502-4566-991E-8721BD509937}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{61B1270E-3218-46E0-BC26-D72C13FB404C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "windows", "windows", "{0BA7BA1B-DF8D-4A86-B615-C08A283E5B32}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Toolkit.Uwp.Notifications.UWP", "node_modules\cordova-plugin-local-notification\src\windows\Microsoft.Toolkit.Uwp.Notifications.UWP\Microsoft.Toolkit.Uwp.Notifications.UWP.csproj", "{569A8B45-7A03-4D8D-B53A-41EB6C18231D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{09913710-F3E3-4801-957E-DC32C2AB6E2F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cordova-plugin-local-notification", "cordova-plugin-local-notification", "{EAF26E4E-8C2C-4ED1-8D6C-A2D84DBD73E1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{23F019C1-46F6-4B65-9B8F-79DCA0511F08}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "windows", "windows", "{C6F65162-7E27-4651-82EC-5A7BB7491C79}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Toolkit.Uwp.Notifications.UWP", "plugins\cordova-plugin-local-notification\src\windows\Microsoft.Toolkit.Uwp.Notifications.UWP\Microsoft.Toolkit.Uwp.Notifications.UWP.csproj", "{D242681D-10DE-4F2E-8D84-F0F01478D4AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{569A8B45-7A03-4D8D-B53A-41EB6C18231D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{569A8B45-7A03-4D8D-B53A-41EB6C18231D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{569A8B45-7A03-4D8D-B53A-41EB6C18231D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{569A8B45-7A03-4D8D-B53A-41EB6C18231D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D242681D-10DE-4F2E-8D84-F0F01478D4AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D242681D-10DE-4F2E-8D84-F0F01478D4AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D242681D-10DE-4F2E-8D84-F0F01478D4AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D242681D-10DE-4F2E-8D84-F0F01478D4AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{43D951DE-2502-4566-991E-8721BD509937} = {BDAE6EE7-2F27-40F7-A83D-E6BEDD0FA88A}
+		{61B1270E-3218-46E0-BC26-D72C13FB404C} = {43D951DE-2502-4566-991E-8721BD509937}
+		{0BA7BA1B-DF8D-4A86-B615-C08A283E5B32} = {61B1270E-3218-46E0-BC26-D72C13FB404C}
+		{569A8B45-7A03-4D8D-B53A-41EB6C18231D} = {0BA7BA1B-DF8D-4A86-B615-C08A283E5B32}
+		{EAF26E4E-8C2C-4ED1-8D6C-A2D84DBD73E1} = {09913710-F3E3-4801-957E-DC32C2AB6E2F}
+		{23F019C1-46F6-4B65-9B8F-79DCA0511F08} = {EAF26E4E-8C2C-4ED1-8D6C-A2D84DBD73E1}
+		{C6F65162-7E27-4651-82EC-5A7BB7491C79} = {23F019C1-46F6-4B65-9B8F-79DCA0511F08}
+		{D242681D-10DE-4F2E-8D84-F0F01478D4AD} = {C6F65162-7E27-4651-82EC-5A7BB7491C79}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {70567254-8BAE-48B9-8251-FD9DEB747B84}
+	EndGlobalSection
+EndGlobal

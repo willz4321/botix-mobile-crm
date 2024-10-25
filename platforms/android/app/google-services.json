@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "312505091006",
+    "project_id": "crm-android-system",
+    "storage_bucket": "crm-android-system.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:312505091006:android:2151cc5787af69c9fe6fef",
+        "android_client_info": {
+          "package_name": "io.cordova.hellocordova"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAB0XJht2Krw2sh9yU4VUKSNcrD10fgshk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

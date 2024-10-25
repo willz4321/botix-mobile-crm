@@ -1,23 +1,7 @@
-/*
-       Licensed to the Apache Software Foundation (ASF) under one
-       or more contributor license agreements.  See the NOTICE file
-       distributed with this work for additional information
-       regarding copyright ownership.  The ASF licenses this file
-       to you under the Apache License, Version 2.0 (the
-       "License"); you may not use this file except in compliance
-       with the License.  You may obtain a copy of the License at
 
-         http://www.apache.org/licenses/LICENSE-2.0
-
-       Unless required by applicable law or agreed to in writing,
-       software distributed under the License is distributed on an
-       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-       KIND, either express or implied.  See the License for the
-       specific language governing permissions and limitations
-       under the License.
-*/
 
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 if (cordovaConfig.IS_GRADLE_PLUGIN_KOTLIN_ENABLED) {
     apply plugin: 'kotlin-android'
@@ -113,6 +97,8 @@ ext {
 }
 
 // PLUGIN GRADLE EXTENSIONS START
+apply from: "../cordova-plugin-badge/hellocordova-badge.gradle"
+apply from: "../cordova-plugin-local-notification/hellocordova-localnotification.gradle"
 // PLUGIN GRADLE EXTENSIONS END
 
 def hasBuildExtras1 = file('build-extras.gradle').exists()
@@ -329,13 +315,27 @@ dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
     implementation "androidx.appcompat:appcompat:${cordovaConfig.ANDROIDX_APP_COMPAT_VERSION}"
     implementation "androidx.core:core-splashscreen:${cordovaConfig.ANDROIDX_CORE_SPLASHSCREEN_VERSION}"
+   // Import the Firebase BoM
+    implementation platform('com.google.firebase:firebase-bom:33.4.0')
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    // Dependencia para Firebase Analytics
+    implementation 'com.google.firebase:firebase-analytics'
 
+    // Agrega otras dependencias de Firebase según tus necesidades
+    // https://firebase.google.com/docs/android/setup#available-libraries
+    
     if (cordovaConfig.IS_GRADLE_PLUGIN_KOTLIN_ENABLED) {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${cordovaConfig.KOTLIN_VERSION}"
     }
 
     // SUB-PROJECT DEPENDENCIES START
     implementation(project(path: ":CordovaLib"))
+    implementation platform("com.google.firebase:firebase-bom:32.5.0")
+    implementation "com.google.firebase:firebase-messaging"
+    implementation "me.leolin:ShortcutBadger:1.1.22@aar"
+    implementation "com.android.support:support-v4:26.+"
+    implementation 'io.socket:socket.io-client:2.0.1'
+
     // SUB-PROJECT DEPENDENCIES END
 }
 

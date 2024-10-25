@@ -14,14 +14,24 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "cordova-android": "^13.0.0",
-    "cordova-plugin-backbutton": "^0.3.0"
+    "cordova-plugin-backbutton": "^0.3.0",
+    "cordova-plugin-badge": "^0.8.9",
+    "cordova-plugin-device": "^3.0.0",
+    "cordova-plugin-firebase-messaging": "^8.0.1",
+    "cordova-plugin-local-notification": "^1.0.0",
+    "cordova-plugin-local-notifications": "^1.0.0",
+    "cordova-support-android-plugin": "~2.0.4"
   },
   "cordova": {
     "platforms": [
       "android"
     ],
     "plugins": {
-      "cordova-plugin-backbutton": {}
+      "cordova-plugin-backbutton": {},
+      "cordova-plugin-firebase-messaging": {},
+      "cordova-plugin-local-notification": {
+        "ANDROID_SUPPORT_V4_VERSION": "26.+"
+      }
     }
   },
   "dependencies": {
