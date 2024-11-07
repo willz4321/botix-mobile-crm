@@ -320,7 +320,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging-ktx'
     // Dependencia para Firebase Analytics
     implementation 'com.google.firebase:firebase-analytics'
-
+    implementation 'io.socket:socket.io-client:2.0.1'
     // Agrega otras dependencias de Firebase según tus necesidades
     // https://firebase.google.com/docs/android/setup#available-libraries
     
@@ -334,8 +334,7 @@ dependencies {
     implementation "com.google.firebase:firebase-messaging"
     implementation "me.leolin:ShortcutBadger:1.1.22@aar"
     implementation "com.android.support:support-v4:26.+"
-    implementation 'io.socket:socket.io-client:2.0.1'
-
+    implementation "androidx.webkit:webkit:1.4.0"
     // SUB-PROJECT DEPENDENCIES END
 }
 

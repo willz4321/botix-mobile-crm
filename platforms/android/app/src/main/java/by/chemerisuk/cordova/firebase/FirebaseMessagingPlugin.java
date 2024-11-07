@@ -16,6 +16,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -23,6 +25,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
+import com.silkimen.http.HttpRequest;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -33,9 +36,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import by.chemerisuk.cordova.support.CordovaMethod;
 import by.chemerisuk.cordova.support.ReflectiveCordovaPlugin;
@@ -44,6 +55,11 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import me.leolin.shortcutbadger.ShortcutBadger;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import static androidx.core.content.ContextCompat.getSystemService;
 import static com.google.android.gms.tasks.Tasks.await;
@@ -62,9 +78,12 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
     private NotificationManager notificationManager;
     private FirebaseMessaging firebaseMessaging;
     private CallbackContext requestPermissionCallback;
-
+    private WebView webViewUser;
     private int defaultNotificationIcon;
     private Socket mSocket;
+    private AtomicReference<String> id_usuario_ref = new AtomicReference<>("");
+    private ScheduledExecutorService scheduler;
+
     public final static String NOTIFICATION_CHANNEL_KEY = "com.google.firebase.messaging.default_notification_channel_id";
     @Override
     protected void pluginInitialize() {
@@ -75,24 +94,70 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
         lastBundle = getNotificationData(cordova.getActivity().getIntent());
 
         try {
-            // Llama al método getToken sin pasar un argumento que necesite un índice
-            getToken(new CordovaArgs(new JSONArray()), new CallbackContext("tokenCallback", webView) {
-                @Override
-                public void success(String token) {
-                    // Aquí mostramos el token en los logs de la consola
-                    Log.d(TAG, "Token FCM obtenido: " + token);
-                }
+            this.webViewUser = (WebView) webView.getEngine().getView();
 
-                @Override
-                public void error(String errorMessage) {
-                    Log.e(TAG, "Error al obtener el token de FCM: " + errorMessage);
-                }
-            });
+            if (webViewUser != null) {
+                Log.d(TAG, "webViewUser inicializado correctamente.");
+            } else {
+                Log.e(TAG, "webViewUser no se inicializó correctamente.");
+            }
+            if (webViewUser != null) {
+                cordova.getActivity().runOnUiThread(() -> {
+                    webViewUser.evaluateJavascript(
+                            "document.addEventListener('DOMContentLoaded', function() {" +
+                                    "   var items = {};" +
+                                    "   for (var i = 0; i < localStorage.length; i++) {" +
+                                    "       var key = localStorage.key(i);" +
+                                    "       items[key] = localStorage.getItem(key);" +
+                                    "   }" +
+                                    "   items;" + // Retorna el objeto JSON con los datos de localStorage
+                                    "}, false);", value -> {
+                                Log.d(TAG, "Contenido de localStorage: " + value);
+
+                                // Aquí puedes verificar si `user_id` está presente en el JSON de `localStorage`
+                                if (value != null && !value.equals("null")) {
+                                    String id_usuario = value.replace("\"", "");
+                                    id_usuario_ref.set(id_usuario);
+                                    Log.d(TAG, "Datos de usuario: " + id_usuario);
+                                } else {
+                                    Log.d(TAG, "No se encontró 'user_id' en localStorage.");
+                                }
+                            });
+                });
+            }
+
         } catch (Exception e) {
-            Log.e(TAG, "Error en pluginInitialize al obtener el token", e);
+            Log.e(TAG, "Error configurando la conexión de la webview", e);
         }
 
-        Log.d(TAG, "FireBaseMesagginf Cargado de manera correcta::::::::::::::///////////////////////////////: " );
+        // Iniciar el scheduler para comprobar cambios en id_usuario_ref
+        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                if (!id_usuario_ref.get().isEmpty()) {
+                    try {
+                        // Ejecutar el bloque de código cuando id_usuario_ref no esté vacío
+                        getToken(new CordovaArgs(new JSONArray()), new CallbackContext("tokenCallback", webView) {
+                            @Override
+                            public void success(String token) {
+                                Log.d(TAG, "Token FCM obtenido: " + token);
+                            }
+
+                            @Override
+                            public void error(String errorMessage) {
+                                Log.e(TAG, "Error al obtener el token de FCM: " + errorMessage);
+                            }
+                        });
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error en pluginInitialize al obtener el token", e);
+                    }
+                    // Detener el scheduler después de ejecutar la lógica
+                    scheduler.shutdown();
+                }
+            }
+        }, 0, 1, TimeUnit.SECONDS); // Revisa cada segundo
+
         try {
             // Definir el ID y el nombre del canal
 
@@ -140,24 +205,64 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
         }
 
     }
+    @Override
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        if (action.equals("receiveDataFromReact")) {
+            String userId = args.getString(0);
+            this.receiveDataFromReact(userId);
+            return true;
+        }
+        return false;
+    }
 
+    public void receiveDataFromReact(String userId) {
+        Log.d(TAG, "ID de usuario recibido desde React: " + userId);
+        id_usuario_ref.set(userId);
+    }
     private void handleInternalMessage(JSONObject data) {
         try {
+            Log.d(TAG, "Contenido de data: " + data.toString());
             // Extrae los datos del mensaje
             String messageText = data.getString("text");
             String senderId = data.getString("senderId");
-            String nombre = data.getString("nombre");
-            String apellido = data.getString("apellido");
-            String foto = data.getString("foto");
+            String nombre = data.getString("destino_nombre");
+            String apellido = data.getString("destino_apellido");
+            String foto = data.getString("destino_foto");
+            String integracion = data.getString("integracion");
+            String tipo = data.getString("type");
 
-            // Muestra la notificación con el mensaje recibido
-            showNotification(messageText, senderId, nombre, apellido, foto);
+            // Verifica que webViewUser esté inicializado antes de llamar a evaluateJavascript
+            if (webViewUser != null) {
+                // Ejecuta JavaScript para obtener el id_usuario desde localStorage
+                cordova.getActivity().runOnUiThread(() -> {
+                    webViewUser.evaluateJavascript("localStorage.getItem('user_id');", value -> {
+                        String id_usuario = value != null && !value.equals("null") ? value.replace("\"", "") : "";
+                        System.out.println("Datos de usuario:" + id_usuario);
+
+                        // Usar un switch para manejar la lógica de integración
+                        switch (integracion) {
+                            case "Interno":
+                                if (!id_usuario.equals(senderId)) {
+                                    showNotification(messageText, senderId, nombre, apellido, foto);
+                                }
+                                break;
+
+                            default:
+                                if (!"reply".equals(tipo)) {
+                                    showNotification(messageText, senderId, nombre, apellido, foto);
+                                }
+                                break;
+                        }
+                    });
+                });
+            } else {
+                Log.e(TAG, "webViewUser no está inicializado.");
+            }
 
         } catch (Exception e) {
             Log.e(TAG, "Error processing internal message", e);
         }
     }
-
     private void showNotification(String messageText, String senderId, String nombre, String apellido, String foto) {
         Context context = cordova.getActivity();
 
@@ -186,7 +291,6 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
         // Muestra la notificación
         notificationManager.notify(1, builder.build()); // El ID de la notificación es '1'
     }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -221,38 +325,82 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
         await(firebaseMessaging.deleteToken());
         callbackContext.success();
     }
-
     @CordovaMethod(WORKER)
     private void getToken(CordovaArgs args, CallbackContext callbackContext) throws Exception {
-        String type = args.optString(0); // Usa optString para obtener el primer argumento sin lanzar excepción
-
-        if (type != null && !type.isEmpty()) {
-            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, (String) null));
-        } else {
-            new AsyncTask<Void, Void, String>() {
-                @Override
-                protected String doInBackground(Void... voids) {
-                    try {
-                        return await(firebaseMessaging.getToken());
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error al obtener el token: " + e.getMessage());
-                        return null;
+        String idUsuario = id_usuario_ref.get(); // Asumimos que el id_usuario es el segundo argumento
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... voids) {
+                try {
+                    Log.d(TAG, "El id de usuario a enviar es : " + idUsuario); // Log para ver el token
+                    String serverToken = getTokenFromServer(idUsuario);
+                    String firebaseToken = await(firebaseMessaging.getToken());
+                    Log.d(TAG, "Token del servidor: " + serverToken); // Log para ver el token
+                    Log.d(TAG, "Token del dispositivo: " + firebaseToken); // Log para ver el token
+                    // Verifica si el token del servidor es nulo, 0, indefinido o diferente del token de Firebase
+                    if ( !serverToken.equals(firebaseToken) || serverToken == null || serverToken.equals("0") || serverToken.equals("undefined")) {
+                        setTokenToServer(firebaseToken, idUsuario);
                     }
+                    return firebaseToken;
+                } catch (Exception e) {
+                    Log.e(TAG, "Error al obtener el token: " + e.getMessage());
+                    return null;
                 }
+            }
 
-                @Override
-                protected void onPostExecute(String fcmToken) {
-                    if (fcmToken != null) {
-                        Log.d(TAG, "Token FCM obtenido: " + fcmToken); // Log para ver el token
-                        callbackContext.success(fcmToken);
-                    } else {
-                        callbackContext.error("Error al obtener el token");
-                    }
+            @Override
+            protected void onPostExecute(String fcmToken) {
+                if (fcmToken != null) {
+                    Log.d(TAG, "Token FCM obtenido: " + fcmToken); // Log para ver el token
+                    callbackContext.success(fcmToken);
+                } else {
+                    callbackContext.error("Error al obtener el token");
                 }
-            }.execute();
+            }
+        }.execute();
+    }
+    private String getTokenFromServer(String idUsuario) throws Exception {
+        System.out.println("esta es la informacion del id:"  +  idUsuario);
+        URL url = new URL("https://botix.axiomarobotics.com:10000/api/auth/get_token_firebase?id_usuario=" + idUsuario);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setRequestMethod("GET");
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
+            String inputLine;
+            StringBuilder content = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            return content.toString();
+        } finally {
+            urlConnection.disconnect();
         }
     }
+    private void setTokenToServer(String token, String idUsuario) {
+        OkHttpClient client = new OkHttpClient();
 
+        // Crear el JSON con el token y el id de usuario
+        String json = "{ \"token\": \"" + token + "\", \"id_usuario\": \"" + idUsuario + "\" }";
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
+
+        // Configurar la solicitud HTTP POST
+        Request request = new Request.Builder()
+                .url("https://botix.axiomarobotics.com:10000/api/auth/set_token_firebase")
+                .post(body)
+                .build();
+
+        // Ejecutar la solicitud en un hilo en segundo plano
+        new Thread(() -> {
+            try (Response response = client.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    Log.d("TAG", "Response from server: " + response.body().string());
+                } else {
+                    Log.e("TAG", "Request failed with code: " + response.code());
+                }
+            } catch (Exception e) {
+                Log.e("TAG", "Error sending data: " + e.getMessage());
+            }
+        }).start();
+    }
     @CordovaMethod
     private void onTokenRefresh(CallbackContext callbackContext) {
         instance.tokenRefreshCallback = callbackContext;

@@ -12,15 +12,12 @@
     <preference name="AndroidXEnabled" value="true" />
     <preference name="GradlePluginGoogleServicesEnabled" value="true" />
     <preference name="GradlePluginGoogleServicesVersion" value="4.4.0" />
-
-    <feature name="FirebaseMessaging">
+    <feature name="FirebaseMessagingPlugin">
         <param name="android-package" value="by.chemerisuk.cordova.firebase.FirebaseMessagingPlugin" />
         <param name="onload" value="true" />
     </feature>
-
     <plugin name="cordova-plugin-firebase-messaging" spec="8.0.1" />
     <plugin name="cordova-plugin-local-notification" spec="0.9.0-beta.3" />
-
     <platform name="android">
         <config-file parent="/manifest" target="AndroidManifest.xml">
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -28,7 +25,6 @@
             <uses-permission android:name="android.permission.INTERNET" />
         </config-file>
     </platform>
-
     <feature name="BackbuttonPlugin">
         <param name="android-package" value="com.badrit.Backbutton.BackbuttonPlugin" />
     </feature>
@@ -40,5 +36,13 @@
     </feature>
     <feature name="LocalNotification">
         <param name="android-package" value="de.appplant.cordova.plugin.localnotification.LocalNotification" />
+    </feature>
+    <feature name="File">
+        <param name="android-package" value="org.apache.cordova.file.FileUtils" />
+        <param name="onload" value="true" />
+    </feature>
+    <allow-navigation href="cdvfile:*" />
+    <feature name="CordovaHttpPlugin">
+        <param name="android-package" value="com.silkimen.cordovahttp.CordovaHttpPlugin" />
     </feature>
 </widget>

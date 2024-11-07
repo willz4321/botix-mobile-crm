@@ -23,7 +23,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
-
+import io.cordova.hellocordova.R;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -185,7 +185,7 @@ public class FirebaseMessagingPluginService extends FirebaseMessagingService {
                 .setContentTitle(notification.getTitle())
                 .setContentText(notification.getBody())
                 .setGroup(notification.getTag())
-                .setSmallIcon(R.drawable.ic_notification) // Icono pequeño para la barra de estado
+                .setSmallIcon(R.drawable.ic_cdv_splashscreen) // Icono pequeño para la barra de estado
                 .setPriority(NotificationCompat.PRIORITY_HIGH); // Asegura que la notificación se muestre de inmediato
 
         // Si la imagen fue descargada correctamente, establecerla como icono grande
