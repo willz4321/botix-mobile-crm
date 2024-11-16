@@ -179,8 +179,20 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
                 notificationManager.createNotificationChannel(notificationChannel);
             }
 
-            // Establecer la conexión del socket
-            mSocket = IO.socket("https://botix.axiomarobotics.com:10000"); // Reemplaza con la URL de tu servidor
+            IO.Options options = new IO.Options();
+            options.query = "id_usuario=" + id_usuario_ref.get() ;
+            options.transports = new String[]{"websocket"};
+
+            // Inicializar y conectar el socket
+            mSocket = IO.socket("https://botix.axiomarobotics.com:10000", options);
+            mSocket.connect();
+
+            // Escuchar evento de conexión
+            mSocket.on(Socket.EVENT_CONNECT, args -> {
+                Log.v(TAG,"Conectado al servidor socket con ID: " + mSocket.id());
+            });
+
+
             mSocket.connect();
 
             // Escuchar el evento 'internalMessage'
@@ -199,6 +211,28 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
                     handleInternalMessage(data);
                 }
             });
+
+            mSocket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.v(TAG,"Socket.IO conectado!");
+                }
+            });
+
+            mSocket.on("disconnect", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.e(TAG,"Socket.IO desconectado");
+                }
+            });
+
+            mSocket.on("connect_error", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    System.err.println("Error al conectar: " + args[0]);
+                }
+            });
+
 
         } catch (Exception e) {
             Log.e(TAG, "Error configuring socket connection", e);
@@ -223,13 +257,18 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
         try {
             Log.d(TAG, "Contenido de data: " + data.toString());
             // Extrae los datos del mensaje
-            String messageText = data.getString("text");
-            String senderId = data.getString("senderId");
-            String nombre = data.getString("destino_nombre");
-            String apellido = data.getString("destino_apellido");
-            String foto = data.getString("destino_foto");
-            String integracion = data.getString("integracion");
-            String tipo = data.getString("type");
+            String messageText = data.has("text") ? data.getString("text") : "";
+            String senderId = data.has("senderId") ? data.getString("senderId") : "";
+            String nombre = data.has("destino_nombre") ? data.getString("destino_nombre") : "";
+            String apellido = data.has("destino_apellido") ? data.getString("destino_apellido") : "";
+            String foto = data.has("destino_foto") ? data.getString("destino_foto") : "";
+            String integracion = data.has("integracion") ? data.getString("integracion") : "";
+            String tipo = data.has("type") ? data.getString("type") : "";
+            String tipo_mensaje = data.has("message_type") ? data.getString("message_type") : "";
+            String duracion = data.has("duration") ? data.getString("duration") : "";
+            String image_url = data.has("url") ? data.getString("url") : "";
+            String fileName = data.has("file_name") ? data.getString("file_name") : "";
+
 
             // Verifica que webViewUser esté inicializado antes de llamar a evaluateJavascript
             if (webViewUser != null) {
@@ -243,13 +282,45 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
                         switch (integracion) {
                             case "Interno":
                                 if (!id_usuario.equals(senderId)) {
-                                    showNotification(messageText, senderId, nombre, apellido, foto);
+                                    switch (tipo_mensaje){
+                                        case "text":
+                                            showNotification(messageText, nombre, apellido, foto);
+                                            break;
+                                        case "audio":
+                                            showNotificationMedia(duracion, nombre, apellido, foto, tipo_mensaje);
+                                            break;
+                                        case "video":
+                                            showNotificationMedia(duracion, nombre, apellido, foto, tipo_mensaje);
+                                            break;
+                                        case "image":
+                                            showNotificationImage(image_url, messageText, nombre, apellido, foto);
+                                            break;
+                                        case "document":
+                                            showNotificationDocument(fileName, nombre, apellido, foto);
+                                            break;
+                                    }
                                 }
                                 break;
 
                             default:
                                 if (!"reply".equals(tipo)) {
-                                    showNotification(messageText, senderId, nombre, apellido, foto);
+                                    switch (tipo_mensaje){
+                                        case "text":
+                                            showNotification(messageText, nombre, apellido, foto);
+                                            break;
+                                        case "audio":
+                                            showNotificationMedia(duracion, nombre, apellido, foto, tipo_mensaje);
+                                            break;
+                                        case "video":
+                                            showNotificationMedia(duracion, nombre, apellido, foto, tipo_mensaje);
+                                            break;
+                                        case "image":
+                                            showNotificationImage(image_url, messageText, nombre, apellido, foto);
+                                            break;
+                                        case "document":
+                                            showNotificationDocument(fileName, nombre, apellido, foto);
+                                            break;
+                                    }
                                 }
                                 break;
                         }
@@ -263,7 +334,7 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
             Log.e(TAG, "Error processing internal message", e);
         }
     }
-    private void showNotification(String messageText, String senderId, String nombre, String apellido, String foto) {
+    private void showNotification(String messageText, String nombre, String apellido, String foto) {
         Context context = cordova.getActivity();
 
         // Descarga la imagen desde la URL de la foto
@@ -290,6 +361,107 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
 
         // Muestra la notificación
         notificationManager.notify(1, builder.build()); // El ID de la notificación es '1'
+    }
+    private void showNotificationMedia(String messageText,String nombre, String apellido, String foto, String tipo){
+        Context context = cordova.getActivity();
+
+        // Descarga la imagen desde la URL de la foto
+        Bitmap imageBitmap = null;
+        try {
+            // Descarga la imagen desde la URL
+            URL url = new URL(foto);
+            imageBitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String mensaje = "";
+        switch (tipo){
+            case "audio":
+                mensaje = "\uD83C\uDF99\uFE0F Mensaje de audio" + formatVideoDuration(messageText);
+                break;
+            case "video":
+                mensaje = "\uD83C\uDFA5 Video" + formatVideoDuration(messageText);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, defaultNotificationChannel)
+                .setSmallIcon(R.drawable.ic_cdv_splashscreen) // Icono de la notificación
+                .setContentTitle(nombre + " " + apellido)
+                .setContentText(mensaje) // Texto del mensaje
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // Alta prioridad para mostrar inmediatamente
+                .setAutoCancel(true); // La notificación desaparece al tocarla
+
+        // Si la imagen fue descargada correctamente, usar BigPictureStyle
+        if (imageBitmap != null) {
+            builder.setLargeIcon(imageBitmap); // Establece la imagen como el ícono grande (foto de perfil)
+        }
+
+        // Muestra la notificación
+        notificationManager.notify(1, builder.build()); // El ID de la notificación es '1'
+    }
+    private void showNotificationImage(String messageText, String  urlIMage, String nombre, String apellido, String foto) {
+        Context context = cordova.getActivity();
+
+        Bitmap imageBitmap = null;
+        Bitmap imageMessage = null;
+
+        try {
+            URL url = new URL(foto);
+            imageBitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+          URL url = new URL(urlIMage);
+          imageMessage = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+        }catch (IOException e){
+            e.printStackTrace();
+
+        }
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, defaultNotificationChannel)
+                .setSmallIcon(R.drawable.ic_cdv_splashscreen) // Icono de la notificación
+                .setContentTitle(nombre + " " + apellido)
+                .setContentText(messageText) // Texto del mensaje
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // Alta prioridad para mostrar inmediatamente
+                .setAutoCancel(true); // La notificación desaparece al tocarla
+
+        // Si la imagen fue descargada correctamente, usar BigPictureStyle
+        if (imageBitmap != null) {
+            builder.setLargeIcon(imageBitmap); // Establece la imagen como el ícono grande (foto de perfil)
+        }
+
+        if (imageMessage != null) {
+            builder.setStyle(new NotificationCompat.BigPictureStyle()
+                    .bigPicture(imageBitmap));
+        }
+
+        notificationManager.notify(1, builder.build()); // El ID de la notificación es '1'
+    }
+    private void showNotificationDocument(String messageText, String nombre, String apellido, String foto) {
+        Context context = cordova.getActivity();
+
+        Bitmap imageBitmap = null;
+
+        try {
+            URL url = new URL(foto);
+            imageBitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String mensaje = "\uD83D\uDCC4 Documento: " + messageText;
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, defaultNotificationChannel)
+                .setSmallIcon(R.drawable.ic_cdv_splashscreen) // Icono de la notificación
+                .setContentTitle(nombre + " " + apellido)
+                .setContentText(mensaje) // Texto del mensaje
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        // Si la imagen fue descargada correctamente, usar BigPictureStyle
+        if (imageBitmap != null) {
+            builder.setLargeIcon(imageBitmap); // Establece la imagen como el ícono grande (foto de perfil)
+        }
+        notificationManager.notify(1, builder.build());
     }
     @Override
     public void onDestroy() {
@@ -406,6 +578,24 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
         instance.tokenRefreshCallback = callbackContext;
     }
 
+    public static String formatVideoDuration(String durationString) {
+        try {
+            // Convertir el string a un double
+            double duration = Double.parseDouble(durationString);
+
+            // Extraer la parte entera como minutos
+            int minutes = (int) duration;
+
+            // Convertir la parte decimal a segundos
+            int seconds = (int) Math.round((duration - minutes) * 60);
+
+            // Asegurarnos de que los segundos estén en dos dígitos
+            return String.format("%d:%02d", minutes, seconds);
+        } catch (NumberFormatException e) {
+            // En caso de error de formato, devolver una cadena vacía
+            return "";
+        }
+    }
     @CordovaMethod
     private void onMessage(CallbackContext callbackContext) {
         instance.foregroundCallback = callbackContext;
