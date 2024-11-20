@@ -15,13 +15,16 @@
   "devDependencies": {
     "cordova-android": "^13.0.0",
     "cordova-plugin-advanced-http": "^3.3.1",
+    "cordova-plugin-android-permissions": "^1.1.5",
     "cordova-plugin-backbutton": "^0.3.0",
     "cordova-plugin-badge": "^0.8.9",
+    "cordova-plugin-camera": "^8.0.0",
     "cordova-plugin-device": "^3.0.0",
     "cordova-plugin-file": "^8.1.2",
     "cordova-plugin-firebase-messaging": "^8.0.1",
     "cordova-plugin-local-notification": "^1.0.0",
     "cordova-plugin-local-notifications": "^1.0.0",
+    "cordova-plugin-media": "^7.0.0",
     "cordova-support-android-plugin": "~2.0.4"
   },
   "cordova": {
@@ -36,7 +39,12 @@
       },
       "cordova-plugin-advanced-http": {
         "ANDROIDBLACKLISTSECURESOCKETPROTOCOLS": "SSLv3,TLSv1"
-      }
+      },
+      "cordova-plugin-camera": {
+        "ANDROIDX_CORE_VERSION": "1.6.+"
+      },
+      "cordova-plugin-media": {},
+      "cordova-plugin-android-permissions": {}
     }
   },
   "dependencies": {
