@@ -50,7 +50,6 @@ public class MainActivity extends CordovaActivity
     }
 
 // Método para solicitar los permisos
-// Método para solicitar permisos
 private void requestPermissions() {
     // Verificar si el dispositivo usa Android 6.0 (API 23) o superior, ya que los permisos en tiempo de ejecución se introdujeron en API 23
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

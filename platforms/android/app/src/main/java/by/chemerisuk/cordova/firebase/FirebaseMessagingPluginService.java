@@ -75,6 +75,7 @@ public class FirebaseMessagingPluginService extends FirebaseMessagingService {
             }
         }
         Log.d(TAG, "FireBaseMesagginf Cargado de manera correcta::::::::::::::///////////////////////////////: " );
+
         try {
             mSocket = IO.socket("https://botix.axiomarobotics.com:10000"); // Reemplaza con la URL de tu servidor
             mSocket.connect();
