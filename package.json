@@ -25,6 +25,7 @@
     "cordova-plugin-local-notification": "^1.0.0",
     "cordova-plugin-local-notifications": "^1.0.0",
     "cordova-plugin-media": "^7.0.0",
+    "cordova-plugin-media-capture": "^5.0.0",
     "cordova-support-android-plugin": "~2.0.4"
   },
   "cordova": {
@@ -44,7 +45,9 @@
         "ANDROIDX_CORE_VERSION": "1.6.+"
       },
       "cordova-plugin-media": {},
-      "cordova-plugin-android-permissions": {}
+      "cordova-plugin-android-permissions": {},
+      "cordova-plugin-file": {},
+      "cordova-plugin-media-capture": {}
     }
   },
   "dependencies": {

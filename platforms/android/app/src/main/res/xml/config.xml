@@ -24,11 +24,16 @@
             <uses-permission android:name="android.permission.VIBRATE" />
             <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.CAMERA" />
+            <uses-permission android:name="android.permission.MEDIA" />
             <uses-permission android:name="android.permission.RECORD_AUDIO" />
             <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
             <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
         </config-file>
     </platform>
+    <feature name="Camera">
+        <param name="android-package" value="org.apache.cordova.camera.CameraLauncher" />
+    </feature>
+    <plugin name="cordova-plugin-camera" spec="8.0.0" />
     <feature name="BackbuttonPlugin">
         <param name="android-package" value="com.badrit.Backbutton.BackbuttonPlugin" />
     </feature>
@@ -57,5 +62,8 @@
     </feature>
     <feature name="Permissions">
         <param name="android-package" value="com.android.plugins.Permissions" />
+    </feature>
+    <feature name="Capture">
+        <param name="android-package" value="org.apache.cordova.mediacapture.Capture" />
     </feature>
 </widget>
