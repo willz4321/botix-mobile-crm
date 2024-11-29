@@ -19,6 +19,8 @@
     <plugin name="cordova-plugin-firebase-messaging" spec="8.0.1" />
     <plugin name="cordova-plugin-local-notification" spec="0.9.0-beta.3" />
     <platform name="android">
+        <icon src="../res/mipmap-mdpi/ic_botix_logo.png" />
+        <splash src="../res/mipmap-mdpi/ic_botix_logo.png" />
         <config-file parent="/manifest" target="AndroidManifest.xml">
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
             <uses-permission android:name="android.permission.VIBRATE" />
@@ -65,5 +67,9 @@
     </feature>
     <feature name="Capture">
         <param name="android-package" value="org.apache.cordova.mediacapture.Capture" />
+    </feature>
+    <feature name="SplashScreen">
+        <param name="android-package" value="org.apache.cordova.splashscreen.SplashScreen" />
+        <param name="onload" value="true" />
     </feature>
 </widget>
